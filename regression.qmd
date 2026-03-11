@@ -9,7 +9,6 @@ format:
 ## Введение
 
 
-* Чем отличаются подходы к моделированию в машинном обучении и в статистике?
 
 * Регрессия используется:
     - восстанавливаем функциональную зависимость
@@ -650,7 +649,7 @@ data.head(5)
 data = pd.read_csv('data/regression/example2.csv')
 
 x = data[['dist', 'wgt', 'vol']]
-y = data.cost + 300*np.random.randn(150)
+y = data.cost
 
 X = sm.add_constant(x)   # добавим еще колонку из единиц 
 
