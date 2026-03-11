@@ -424,7 +424,7 @@ plt.show()
 
 ## Диагностика-2
 
-Возможно, есть закономерность в остатках (от Y). Это нехорошо :(
+Возможно, есть закономерность в остатках (от Y). Это нехорошо :( Но это показатель, что (вероятно) есть еще один неучтенный предиктор.
 ```{python}
 #| echo: true
  
@@ -504,7 +504,6 @@ print('AIC new:', round(new_results.aic), 'BIC new:', round(new_results.bic))
 ## Модель 2: графики
 
 ```{python}
-
 # Создаем данные для предсказания
 x_range = np.linspace(train_data['x'].min(), train_data['x'].max(), 50)
 
@@ -562,3 +561,148 @@ plt.show()
 Подчеркну еще раз:
 
 - регрессия не волшебная палочка, а поиск "цифровой середины".
+
+
+## Пример 2.
+
+Стоимость доставки:
+
+* $x_1$ - длина пути, $x_2$ -- вес груза, $x_3$ -- объем груза;
+* $Y$ - цена подрядчика.
+
+$Cost = b_0 + b_1 DIST + b_2 WGT + b_3 VOL$
+```{python}
+#| echo: true
+#| 
+data = pd.read_csv('data/regression/example2.csv')
+
+x = data[['dist', 'wgt', 'vol']]
+y = data.cost + 300*np.random.randn(150)
+
+X = sm.add_constant(x)   # добавим еще колонку из единиц 
+
+model1 = sm.OLS(y, X)
+results1 = model1.fit()
+print(results1.summary())
+```
+
+## Диагностика
+
+```{python}
+#| echo: true
+ 
+residuals = results1.resid
+
+fig, (ax1, ax2) = plt.subplots(1, 2)
+ax1.scatter(range(len(residuals)), residuals, alpha=0.6, color='darkblue', s=50)
+ax1.set_xlabel('Номер примера')
+ax1.set_ylabel('Остатки')
+ax1.grid(True, alpha=0.3)
+ax2.hist(residuals, bins=10, color='darkblue', edgecolor='black', alpha=0.7)
+ax2.axvline(x=0, color='darkred', linestyle='-', linewidth=1.5)
+ax2.set_xlabel('Остатки')
+ax2.set_ylabel('Частота')
+ax2.grid(True, alpha=0.3, axis='y')
+plt.show()
+```
+
+
+## Диагностика-2
+
+```{python}
+#| echo: true
+ 
+fig, [(ax1, ax2), (ax3, ax4)] = plt.subplots(2, 2)
+ax1.scatter(data.cost, residuals, alpha=0.6, color='darkblue', s=50)
+ax1.set_xlabel('стоимость (Y)')
+ax1.set_ylabel('Остатки')
+ax1.grid(True, alpha=0.3)
+ax2.scatter(data.wgt, residuals, alpha=0.6, color='darkblue', s=50)
+ax2.set_xlabel('Вес груза (X)')
+ax2.set_ylabel('Остатки')
+ax2.grid(True, alpha=0.3)
+ax3.scatter(data.dist, residuals, alpha=0.6, color='darkblue', s=50)
+ax3.set_xlabel('Расстояние')
+ax3.set_ylabel('Остатки')
+ax3.grid(True, alpha=0.3)
+ax4.scatter(data.vol, residuals, alpha=0.6, color='darkblue', s=50)
+ax4.set_xlabel('Объем')
+ax4.set_ylabel('Остатки')
+ax4.grid(True, alpha=0.3)
+plt.show()
+```
+
+## Модель 2:
+$Cost = b_0 + b_1 DIST + b_2 WGT$
+```{python}
+#| echo: true
+
+x = data[['dist', 'wgt', ]] 
+y = data.cost
+
+X = sm.add_constant(x)   # добавим еще колонку из единиц 
+
+model2 = sm.OLS(y, X)
+results2 = model2.fit()
+print(results2.summary())
+```
+
+## Диагностика
+
+```{python}
+#| echo: true
+ 
+residuals = results2.resid
+
+fig, (ax1, ax2) = plt.subplots(1, 2)
+ax1.scatter(range(len(residuals)), residuals, alpha=0.6, color='darkblue', s=50)
+ax1.set_xlabel('Номер примера')
+ax1.set_ylabel('Остатки')
+ax1.grid(True, alpha=0.3)
+ax2.hist(residuals, bins=10, color='darkblue', edgecolor='black', alpha=0.7)
+ax2.axvline(x=0, color='darkred', linestyle='-', linewidth=1.5)
+ax2.set_xlabel('Остатки')
+ax2.set_ylabel('Частота')
+ax2.grid(True, alpha=0.3, axis='y')
+plt.show()
+```
+
+## Диагностика-2
+
+```{python}
+#| echo: true
+ 
+fig, [(ax1, ax2), (ax3, ax4)] = plt.subplots(2, 2)
+ax1.scatter(data.cost, residuals, alpha=0.6, color='darkblue', s=50)
+ax1.set_xlabel('стоимость (Y)')
+ax1.set_ylabel('Остатки')
+ax1.grid(True, alpha=0.3)
+ax2.scatter(data.wgt, residuals, alpha=0.6, color='darkblue', s=50)
+ax2.set_xlabel('Вес груза (X)')
+ax2.set_ylabel('Остатки')
+ax2.grid(True, alpha=0.3)
+ax3.scatter(data.dist, residuals, alpha=0.6, color='darkblue', s=50)
+ax3.set_xlabel('Расстояние')
+ax3.set_ylabel('Остатки')
+ax3.grid(True, alpha=0.3)
+ax4.scatter(data.vol, residuals, alpha=0.6, color='darkblue', s=50)
+ax4.set_xlabel('Объем')
+ax4.set_ylabel('Остатки')
+ax4.grid(True, alpha=0.3)
+plt.show()
+```
+
+## Общие выводы
+
+1. Диагностика моделей - обязательна. Проверяем остатки:
+    - среднее 0;
+    - дисперсия остатков постоянна;
+    - остатки не показывают паттернов в поведении и зависимостей от переменных.
+      
+2. Оцениваем модели по:
+    - $R^2$ -- точность;
+    - BIC/AIC -- выбор моделей, страховка от переобучения.
+
+3. Лишние предикторы также плохи, как и их недостаток:
+    - паттерны в поведении остатков часто свидельствуют о неучтенных предикторах (или нелинейной связи);
+    - точная модель со статистически незначимыми коэффициентами намекает на лишний предиктор.
